@@ -84,4 +84,9 @@ def predict_batch(wine: WineBatch):
     batches = wine.batches
     np_batches = np.array(batches)
     pred = clf.predict(np_batches).tolist()
-    return {'Predição': pred}
+    return {"Predição": pred}
+
+
+@app.post("/")
+def home():
+    return {"Vá para /docs para acessar a documentação!"}
