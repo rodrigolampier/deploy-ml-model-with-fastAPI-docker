@@ -1,7 +1,7 @@
 
-## Codificando o servidor
+## Código para o servidor
 
-# Import das dependencias
+# Import das dependências
 import pickle  # Para carregar o modelo pré-treinado
 import numpy as np
 from typing import List
@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel, conlist
 
 
-# Criamos uma instância da classe FastAPI, que vai lidar com todas as funcionalidades do servidor
+# Criamos uma instância da classe FastAPI, ela vai lidar com todas as funcionalidades do servidor
 app = FastAPI(title='Predicting Wine Class')
 
 
@@ -29,14 +29,15 @@ class Wine(BaseModel):
     od280_od315_of_diluted_wines: float
     proline: float
 
+
 # Classe para representar um lote de vinhos
 # conlist impõe a restrição de tipo e tamanho dos itens
 class WineBatch(BaseModel):
     batches: List[conlist(item_type=float, min_items=13, max_items=13)]
 
 
-# carregar o classificador na memória para que possa ser usado para previsão.
-# Esse decorator garante que a função seja executada na inicialização do servidor.
+# Carrega o classificador na memória para que possa ser usado para previsão
+# Esse decorator garante que a função seja executada na inicialização do servidor
 @app.on_event("startup")
 def load_clf():
     with open("/app/wine.pkl", "rb") as file:
@@ -44,7 +45,7 @@ def load_clf():
         clf = pickle.load(file)
 
 
-# Função que realizará as previsões
+# Função que realizará as previsões de um único vinho
 # Ela será acionada quando for chamado o endpoit /predict e espera um objeto Wine
 @app.post("/predict")
 def predict(wine: Wine):
@@ -74,12 +75,13 @@ def predict(wine: Wine):
     pred = clf.predict(data_point).tolist()
     pred = pred[0]
     print(pred)
-    return {"Prediction": pred}
+    return {"Predição": pred}
 
-# Função para executar a predição em lote de dados
+
+# Função que realizará as previsões de um lote de vinhos
 @app.post("/predict-batch")
 def predict_batch(wine: WineBatch):
     batches = wine.batches
     np_batches = np.array(batches)
     pred = clf.predict(np_batches).tolist()
-    return {'Prediction': pred}
+    return {'Predição': pred}
